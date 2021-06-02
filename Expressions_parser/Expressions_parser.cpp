@@ -1,6 +1,8 @@
 #include <iostream>
 #include <string>
 
+class Parser;
+
 int main()
 {
     bool exit = false;
@@ -23,4 +25,20 @@ int main()
 
     std::cout << "\nExited";
     return 0;
+}
+
+
+class Parser {
+public:
+    Parser();
+    ~Parser();
+
+private:
+
+};
+
+Parser::Parser() {
+}
+
+Parser::~Parser() {
 }
