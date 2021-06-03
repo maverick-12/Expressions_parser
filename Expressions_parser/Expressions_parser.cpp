@@ -2,7 +2,7 @@
 #include <string>
 
 
-float recur(std::string input);
+float recur(const std::string* input, const int beg, const int end);
 
 int main()
 {
@@ -18,7 +18,7 @@ int main()
         }
         else {
             input.erase(std::remove(input.begin(), input.end(), ' '), input.end());
-            std::cout << "\n= " << recur(input);
+            std::cout << "\n= " << recur(&input, 0, input.length() - 1);
             
         }
 
@@ -28,37 +28,63 @@ int main()
     return 0;
 }
 
-float recur(std::string input) {
-    if (input.empty()) {
+float recur(const std::string* input, const int beg, const int end) {
+    if (input->empty()) {
         // do something to manage the error
     }
 
-    int len = input.length();
+    const char ops[4] = { '+','-','*','/' };
     int opPos = -1;
     int cur;
-    char ops[4] = { '+','-','*','/' };
-    // look for ops
-    for (int i = 0; i < 4; i++) {
-        cur = 0;
-        do {
-            if (input[cur] == ops[i]) {
-                opPos = cur;    // save 
-                i = 4;          // to break the outer loop and to know an op was found
+    int b = beg;
+    int e = end;
+    const int len = e - b + 1;
+    int lastHPrioOp = -1;
+  
+
+    // look for lowest priority operators first
+    do {
+        if (!std::isdigit((*input)[cur])) {
+            if ((*input)[cur] == '(') {    // skip to the matching brace and go on searching
+                int braces = 1;
+                int startBrace = cur;
+                int endBrace;
+                do {
+                    if ((*input)[++cur] == ')') {
+                        braces--;
+                        if (braces == 0) {
+                            endBrace = cur;
+                        }
+                    } else if ((*input)[cur] == '(') {
+                        braces++;
+                    }
+                } while ((braces > 0) && (cur < len));
+                if ((startBrace == b) && (endBrace == e)) {
+                    cur = ++b;
+                    e--;
+                    continue;
+                }
+            } else if ((*input)[cur] == '+' || (*input)[cur] == '-') {  // found a low priority operator -> exit loop
+                opPos = cur;
                 break;
             }
-            cur++;
-        } while (cur < len);
-    }
+            else if ((*input)[cur] == '*' || (*input)[cur] == '/') {    // found a high priority operator -> continue searching
+                lastHPrioOp = cur;
+            }
+        }
+    } while (cur < len);
 
-    // if we are in the base case
     if (cur == len) {
-        return std::stof(input);
+        if (lastHPrioOp == -1 && opPos == -1)       // if we are in the base case
+            return std::stof((*input));
+        else if (lastHPrioOp != -1 && opPos == -1)  // if there was no low priority operator
+            opPos = lastHPrioOp;
     }
 
-    float a = recur(input.substr(0, opPos));
-    float b = recur(input.substr(opPos + 1, len));
+    float a = recur(input, b, opPos);
+    float b = recur(input, opPos+1, e);
 
-    switch (input[opPos]) {
+    switch ((*input)[opPos]) {
     case '+':
         return a + b;
 
