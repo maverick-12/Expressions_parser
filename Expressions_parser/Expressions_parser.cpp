@@ -26,7 +26,7 @@ int main()
 
     std::cout << "\nExited\n\n";
     return 0;
-}
+} 
 
 float recur(std::string input) {
     if (input.empty()) {
