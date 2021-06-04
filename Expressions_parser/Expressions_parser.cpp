@@ -35,20 +35,21 @@ float recur(const std::string* input, const int beg, const int end) {
 
     const char ops[4] = { '+','-','*','/' };
     int opPos = -1;
-    int cur;
+    int cur = beg;
     int b = beg;
     int e = end;
     const int len = e - b + 1;
     int lastHPrioOp = -1;
   
-
+    cur--;
     // look for lowest priority operators first
     do {
+        ++cur;
         if (!std::isdigit((*input)[cur])) {
             if ((*input)[cur] == '(') {    // skip to the matching brace and go on searching
                 int braces = 1;
                 int startBrace = cur;
-                int endBrace;
+                int endBrace = startBrace;
                 do {
                     if ((*input)[++cur] == ')') {
                         braces--;
@@ -58,8 +59,11 @@ float recur(const std::string* input, const int beg, const int end) {
                     } else if ((*input)[cur] == '(') {
                         braces++;
                     }
-                } while ((braces > 0) && (cur < len));
-                if ((startBrace == b) && (endBrace == e)) {
+                } while ((braces > 0) && (cur < e));
+                if (startBrace == endBrace) {
+                    // the expression is invalid
+                } else if ((startBrace == b) && (endBrace == e)) {
+                    // reset state
                     cur = ++b;
                     e--;
                     continue;
@@ -72,30 +76,30 @@ float recur(const std::string* input, const int beg, const int end) {
                 lastHPrioOp = cur;
             }
         }
-    } while (cur < len);
+    } while (cur < e);
 
-    if (cur == len) {
+    if (cur == e) {
         if (lastHPrioOp == -1 && opPos == -1)       // if we are in the base case
-            return std::stof((*input));
+            return std::stof(input->substr(beg, end - beg + 1));
         else if (lastHPrioOp != -1 && opPos == -1)  // if there was no low priority operator
             opPos = lastHPrioOp;
     }
 
-    float a = recur(input, b, opPos);
-    float b = recur(input, opPos+1, e);
+    float A = recur(input, b, opPos-1);
+    float B = recur(input, opPos+1, e);
 
     switch ((*input)[opPos]) {
     case '+':
-        return a + b;
+        return A + B;
 
     case '-':
-        return a - b;
+        return A - B;
 
     case '*':
-        return a * b;
+        return A * B;
 
     case '/':
-        return a / b;
+        return A / B;
 
     default:
         break;
